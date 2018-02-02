@@ -20,6 +20,14 @@ private slots:
 
     void on_pbExit_clicked();
 
+    void on_btnLoadVideo_clicked();
+
+    void on_pbClear_clicked();
+
+    void on_ckboxOutputName_stateChanged(int arg1);
+
+    void FileNameParser(QString);
+
 private:
     Ui::MainWindow *ui;
 };
