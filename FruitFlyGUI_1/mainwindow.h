@@ -31,6 +31,10 @@ private slots:
 
     void FileNameParser(QString);
 
+    std::string intToString(int);
+    void searchForMovement(cv::Mat,cv::Mat);
+    void ArenaSetup(int, int ,int ,int,void*);
+    void VideoAnalyzer();
 private:
     Ui::MainWindow *ui;
 };

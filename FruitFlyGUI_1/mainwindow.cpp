@@ -1,9 +1,12 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
 #include <QMessageBox>
 #include <QFileDialog>
 
+#include "videodata.h"
+
+
+VideoData FlyData;
 QString VideoFileName;
 QString OutputFileName;
 QString OutputFileParse;
@@ -54,6 +57,20 @@ void MainWindow::on_pbExit_clicked()
 
 void MainWindow::on_pbStart_clicked()
 {
+    if(VideoFileName.isEmpty()){
+        QMessageBox::warning(this,"Error!!","Please Load A Video");
+        return;
+    }
+    else if(OutputFileName.isEmpty()){
+        QMessageBox::warning(this,"Error!!","Please Give A Name to the Output File");
+        return;
+    }
+    else if(OutputFileParse.isEmpty()){
+        QMessageBox::warning(this,"Error!!","Please Give A Name to the Output File");
+        return;
+    }
+
+
 
 }
 
@@ -82,5 +99,47 @@ void MainWindow::FileNameParser(QString name){
         OutputFileParse=OutputFileParse + Parser[i];
     }
    return;
+
+}
+
+
+std::string MainWindow::intToString(int number){
+    std::stringstream ss;
+    ss<< number;
+    return ss.str();
+}
+void MainWindow::searchForMovement(cv::Mat,cv::Mat){
+
+}
+void MainWindow::ArenaSetup(int event, int x,int y,int flags,void* userData){
+    int size =FlyData.ArenaCoord.size();
+    if(size<=3){
+        cv::circle((*(cv::Mat*)userData),cv::Point(x,y),2,cv::Scalar(0,255,0),3);
+        FlyData.ArenaStruct.x_coord =x;
+        FlyData.ArenaStruct.y_coord=y;
+        FlyData.ArenaCoord.push_back(FlyData.ArenaStruct);
+    }
+    else if(size==3){
+        FlyData.ArenaCalc();
+        //cv::circle((*(cv::Mat)userData),cv::Point(FlyData.x_center,FlyData.y_center),FlyData.ArenaRadius,cv::Scalar(0,255,0),3);
+        int rectP1x = FlyData.x_center - FlyData.ArenaRadius -5;
+        int rectP1y = FlyData.y_center -FlyData.ArenaRadius -5;
+        int rectP2x = FlyData.x_center + FlyData.ArenaRadius + 5;
+        int rectP2y =FlyData.y_center + FlyData.ArenaRadius + 5;
+       // cv::rectangle((*(cv::Mat)userData),cv::Point(rectP1x,rectP1y),cv::Point(rectP2x,rectP2y),cv::Scalar(0,255,255),3);
+    }
+    cv::imshow("Areana",(*(cv::Mat*)userData));
+
+}
+void MainWindow::VideoAnalyzer(){
+
+    cv::Mat frame1, frame2;
+    cv::Mat grayImage1, grayImage2;
+    cv::Mat differenceImage;
+    cv::Mat thresholdImage;
+
+    //if(!cap.isOpened()){
+    //    QMessageBox::warning(this,"Error","Error Opening Video Stream on File");
+   // }
 
 }
