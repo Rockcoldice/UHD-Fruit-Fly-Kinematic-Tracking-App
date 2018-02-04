@@ -11,6 +11,7 @@ VideoData FlyData;
 QString VideoFileName;
 QString OutputFileName;
 QString OutputFileParse;
+QString OutputSaveLocation;
 
 
 
@@ -80,7 +81,18 @@ void MainWindow::on_pbStart_clicked()
         QMessageBox::warning(this,"Error!!","Please Give A Name to the Output File");
         return;
     }
-   else VideoAnalyzer();
+   else {
+
+
+       OutputSaveLocation = QFileDialog::getExistingDirectory();
+       qDebug()<<OutputSaveLocation;
+       if(OutputSaveLocation.size() == 3){
+            OutputSaveLocation= OutputSaveLocation + OutputFileParse;
+       }
+       else OutputSaveLocation = OutputSaveLocation +'/' +OutputFileParse;
+
+       VideoAnalyzer();
+    }
 }
 
 void MainWindow::FileNameParser(QString name){
@@ -212,6 +224,10 @@ void MainWindow::VideoAnalyzer(){
     }
     cap.release();
     cv::destroyAllWindows();
+    FlyData.DistanceCalc();
+    FlyData.VelocityCalc();
+
+    FlyData.WriteToFile(OutputSaveLocation.toStdString(),VideoFileName.toStdString());
 
 }
 

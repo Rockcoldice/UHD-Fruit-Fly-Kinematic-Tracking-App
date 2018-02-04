@@ -10,7 +10,7 @@ class VideoData
 private:
     const unsigned int FPM = 1800;
     const float ConvertSec = 0.066;
-    float ConvertCenti;
+    float ConvertCenti = 0.01079;
     struct Arena
     {
       int x_coord;
@@ -38,7 +38,7 @@ private:
     };
 
 public:
-    int ArenaRadius;
+    int ArenaRadius = 380;
     int x_center;
     int y_center;
     Arena ArenaStruct;
