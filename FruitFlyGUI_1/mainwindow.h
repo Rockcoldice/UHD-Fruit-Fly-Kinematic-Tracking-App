@@ -5,7 +5,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include<opencv2/videoio/videoio.hpp>
+#include <opencv2/videoio/videoio.hpp>
 
 namespace Ui {
 class MainWindow;
@@ -31,12 +31,13 @@ private slots:
 
     void FileNameParser(QString);
 
+    void on_txtbxOutputFileName_textEdited(const QString &arg1);
+
     std::string intToString(int);
     void searchForMovement(cv::Mat,cv::Mat&);
     void ArenaSetup(int, int ,int ,int,void*);
     void VideoAnalyzer();
-
-    void on_txtbxOutputFileName_textEdited(const QString &arg1);
+    void DebugMode();
 
 private:
     Ui::MainWindow *ui;

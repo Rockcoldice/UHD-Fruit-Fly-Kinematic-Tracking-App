@@ -1,6 +1,6 @@
 #include "videodata.h"
 
-void VideoData::ArenaCalc(){
+bool VideoData::ArenaCalc(){
 
     float k, l, m, n, p, q;
     float a_1, a_2, b_2, b_1, g_1, g_2;
@@ -37,8 +37,11 @@ void VideoData::ArenaCalc(){
     ArenaRadius = ((k - x_center)*(k - x_center)) + (l - y_center)*(l - y_center);
     ArenaRadius = sqrt(ArenaRadius);
     ConvertCenti = 4.1 / ArenaRadius;
+    if(ConvertCenti==0) return false;
+    else return true;
 }
-void VideoData::DistanceCalc(){
+bool VideoData::DistanceCalc(){
+    bool Finish = false;
     MinuteData min;
     min.Distance = 0;
     int size = FrameVector.size();
@@ -119,10 +122,12 @@ void VideoData::DistanceCalc(){
         }
     }
     MinuteVector[MinCounter].InnerTime = framecounter * ConvertSec;
-    return;
+    Finish = true;
+    return Finish;
 
 }
-void VideoData::VelocityCalc(){
+bool VideoData::VelocityCalc(){
+    bool Finish = false;
     int size = FrameVector.size();
     size = size - 4;
     float const dem = 5 * 0.033;	//denominator
@@ -176,9 +181,11 @@ void VideoData::VelocityCalc(){
             InActiveTimeTotal = InActiveTimeTotal + MinuteVector[i].InActiveTime;
         }
     }
-
+    Finish = true;
+    return Finish;
 }
-void VideoData::WriteToFile(std::string FileName, std::string VideoName){
+bool VideoData::WriteToFile(std::string FileName, std::string VideoName){
+    bool Finish = false;
     int MinSize = MinuteVector.size();
         MinSize = MinSize - 1;
         int FrameSize = FrameVector.size();
@@ -233,14 +240,25 @@ void VideoData::WriteToFile(std::string FileName, std::string VideoName){
             }
         }
         else {
-            //cout << "Error: File Cannot Be Created" << "\n" << "\n";
+            Finish = false;
+            return Finish;
         }
         myFile.close();
         //cout << "Finish Writing to File" << "\n" << "\n";
+        Finish = true;
+        return Finish;
 }
 
 VideoData::VideoData()
 {
 
 }
-VideoData::~VideoData(){}
+VideoData::~VideoData(){
+    ArenaRadius = 0;
+    x_center =0;
+    y_center=0;
+    ArenaCoord.clear();
+    FrameVector.clear();
+    MinuteVector.clear();
+
+}

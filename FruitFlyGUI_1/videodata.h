@@ -8,7 +8,6 @@
 class VideoData
 {
 private:
-    const unsigned int FPM = 1800;
     const float ConvertSec = 0.066;
     float ConvertCenti = 0.01079;
     struct Arena
@@ -38,6 +37,8 @@ private:
     };
 
 public:
+    const unsigned int FPM = 1800;
+
     int ArenaRadius = 380;
     int x_center;
     int y_center;
@@ -49,10 +50,10 @@ public:
     MinuteData MinuteDataStruct;
     std::vector<MinuteData> MinuteVector;
 
-    void DistanceCalc();
-    void VelocityCalc();
-    void ArenaCalc();
-    void WriteToFile(std::string,std::string);
+    bool DistanceCalc();
+    bool VelocityCalc();
+    bool ArenaCalc();
+    bool WriteToFile(std::string,std::string);
 
     VideoData();
     ~VideoData();

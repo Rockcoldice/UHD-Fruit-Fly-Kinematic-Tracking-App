@@ -199,10 +199,17 @@ void MainWindow::VideoAnalyzer(){
     cv::namedWindow("Frame");
     cap>>frame1;
     cap>>frame2;
-    int counter =1;
+    int counter = 0;
     while(1){
         qDebug()<<counter;
-        if(frame1.empty()||frame2.empty()) break;
+        if(frame1.empty()||frame2.empty()) {
+
+            if(frame1.empty())   QMessageBox::information(this,"Frame 1","Frame 1 is empthy top of video tracking");
+            else{
+                QMessageBox::information(this,"Frame 2","Frame 2 is empthy top of video tracking");
+            }
+            break;
+        }
         cv::cvtColor(frame1,grayImage1,cv::COLOR_BGR2GRAY);
         cv::cvtColor(frame2,grayImage2,cv::COLOR_BGR2GRAY);
         cv::absdiff(grayImage1,grayImage2,differenceImage);
@@ -210,24 +217,74 @@ void MainWindow::VideoAnalyzer(){
         cv::blur(thresholdImage,thresholdImage,cv::Size(10,10));
         cv::threshold(thresholdImage,thresholdImage,20,255,cv::THRESH_BINARY);
         searchForMovement(thresholdImage,frame1);
+        FlyData.FrameVector[counter].FrameNumber = counter + 1;
         cv::imshow("Frame",frame1);
-
-
         cap.read(frame1);
         counter=counter +1;
+        frame1.release();
+        cap>>frame1;
+        frame1=frame2.clone();
+        frame2.release();
+        cap>>frame2;
+        if(frame2.empty()){
+
+            QMessageBox::information(this,"Frame 2","Frame 2 is empthy end of video tracking");
+             break;
+        }
         char c = (char)cv::waitKey(25);
         if(c==27) break;
-        frame1.release();
-        frame2.release();
-        cap>>frame1;
-        cap>>frame2;
     }
     cap.release();
     cv::destroyAllWindows();
-    FlyData.DistanceCalc();
-    FlyData.VelocityCalc();
+    bool verifier;
+    verifier = FlyData.DistanceCalc();
+    if(verifier == false){
+            QMessageBox::warning(this,"Error","Distance Calculation Were not Completed");
+            return;
+    }
+    verifier = FlyData.VelocityCalc();
+    if(verifier == false){
+        QMessageBox::warning(this,"Error","Velocity Calculation Were not Completed");
+        return;
 
-    FlyData.WriteToFile(OutputSaveLocation.toStdString(),VideoFileName.toStdString());
+    }
+    DebugMode();
+    return;
+    verifier = FlyData.WriteToFile(OutputSaveLocation.toStdString(),VideoFileName.toStdString());
+    if(verifier == true){
+        QMessageBox::information(this,"Finish","Video has Finish Processing");
+        return;
+    }
+    else{
+        QMessageBox::warning(this,"Error","Data File Was not created");
+        return;
 
+    }
 }
-
+void MainWindow::DebugMode(){
+   int size = FlyData.FrameVector.size();
+   size = size -1;
+   for(int i = 0; i<=size;i++){
+       qDebug()<<"Frame Number: "<<FlyData.FrameVector[i].FrameNumber<<"\t\t";
+       qDebug()<<"X-Coord: "<<FlyData.FrameVector[i].X_Coord<<"\t\t";
+       qDebug()<<"Y-Coord: "<<FlyData.FrameVector[i].Y_Coord<<"\t\t";
+       qDebug()<<"Distance: "<<FlyData.FrameVector[i].Velocity<<"\n";
+   }
+   //qDebug<<"\n\n\n";
+   int Minutes = (size/FlyData.FPM)+1;
+   QString Something = "\n\n\n Minutes: ";
+   Something.append(Minutes);
+   Something.append("\n\n\n");
+   qDebug()<<Something;
+   size = FlyData.MinuteVector.size();
+   size = size -1;
+   for(int i = 0 ;i<=size;i++){
+       qDebug()<<"Minute: "<<i<<"\t\t";
+       qDebug()<<"Distance: "<<FlyData.MinuteVector[i].Distance<<"\t\t";
+       qDebug()<<"Velocity: "<<FlyData.MinuteVector[i].Velocity<<"\t\t";
+       qDebug()<<"Inner Time: "<<FlyData.MinuteVector[i].InnerTime<<"\t\t";
+       qDebug()<<"Active Time: "<<FlyData.MinuteVector[i].ActiveTime<<"\t\t";
+       qDebug()<<"InActive Time: "<<FlyData.MinuteVector[i].InActiveTime<<"\n";
+   }
+   qDebug()<<"\n\n";
+}
