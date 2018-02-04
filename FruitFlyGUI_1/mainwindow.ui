@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="QWidget" name="">
+   <widget class="QWidget" name="layoutWidget">
     <property name="geometry">
      <rect>
       <x>30</x>
@@ -103,6 +103,12 @@
               <font>
                <pointsize>12</pointsize>
               </font>
+             </property>
+             <property name="readOnly">
+              <bool>true</bool>
+             </property>
+             <property name="clearButtonEnabled">
+              <bool>false</bool>
              </property>
             </widget>
            </item>
@@ -259,7 +265,7 @@
      <x>0</x>
      <y>0</y>
      <width>886</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>

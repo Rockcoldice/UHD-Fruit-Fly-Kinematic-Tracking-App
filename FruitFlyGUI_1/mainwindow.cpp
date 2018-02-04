@@ -12,6 +12,8 @@ QString VideoFileName;
 QString OutputFileName;
 QString OutputFileParse;
 
+
+
 int theObject[2] = {0,0};
 cv::Rect objectBoundingRect = cv::Rect(0,0,0,0);
 
@@ -19,6 +21,9 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    VideoFileName.clear();
+    OutputFileName.clear();
+    OutputFileParse.clear();
     ui->setupUi(this);
 }
 
@@ -39,18 +44,24 @@ void MainWindow::on_pbClear_clicked()
     OutputFileName.clear();
     ui->txtbxOutputFileName->clear();
 }
+void MainWindow::on_txtbxOutputFileName_textEdited(const QString &arg1)
+{
+     OutputFileName=ui->txtbxOutputFileName->text();
+}
 
 void MainWindow::on_ckboxOutputName_stateChanged(int arg1)
 {
     bool OutputFileCheckbox = false;
     OutputFileCheckbox = ui->ckboxOutputName->checkState();
     if(OutputFileCheckbox){
-        FileNameParser(VideoFileName);
+        if(OutputFileParse.isEmpty())FileNameParser(VideoFileName);
         ui->txtbxOutputFileName->setText(OutputFileParse);
+        ui->txtbxOutputFileName->setReadOnly(true);
     }
     else{
+        ui->txtbxOutputFileName->setReadOnly(false);
         ui->txtbxOutputFileName->clear();
-        OutputFileName.clear();
+        if(!OutputFileName.isEmpty()) ui->txtbxOutputFileName->setText(OutputFileName);
     }
 }
 
@@ -61,20 +72,15 @@ void MainWindow::on_pbExit_clicked()
 
 void MainWindow::on_pbStart_clicked()
 {
-//    if(VideoFileName.isEmpty()){
-//        QMessageBox::warning(this,"Error!!","Please Load A Video");
-//        return;
-//    }
-//    else if(OutputFileName.isEmpty()){
-//        QMessageBox::warning(this,"Error!!","Please Give A Name to the Output File");
-//        return;
-//    }
-//    else if(OutputFileParse.isEmpty()){
-//        QMessageBox::warning(this,"Error!!","Please Give A Name to the Output File");
-//        return;
-//    }
-
-VideoAnalyzer();
+   if(VideoFileName.isEmpty()){
+        QMessageBox::warning(this,"Error!!","Please Load A Video");
+        return;
+    }
+   else if(ui->txtbxOutputFileName->text().isEmpty()){
+        QMessageBox::warning(this,"Error!!","Please Give A Name to the Output File");
+        return;
+    }
+   else VideoAnalyzer();
 }
 
 void MainWindow::FileNameParser(QString name){
@@ -208,3 +214,4 @@ void MainWindow::VideoAnalyzer(){
     cv::destroyAllWindows();
 
 }
+

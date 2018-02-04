@@ -36,6 +36,8 @@ private slots:
     void ArenaSetup(int, int ,int ,int,void*);
     void VideoAnalyzer();
 
+    void on_txtbxOutputFileName_textEdited(const QString &arg1);
+
 private:
     Ui::MainWindow *ui;
 };
