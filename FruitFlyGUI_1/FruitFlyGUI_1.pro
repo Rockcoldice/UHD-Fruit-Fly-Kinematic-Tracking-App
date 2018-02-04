@@ -38,9 +38,9 @@ FORMS += \
 
 INCLUDEPATH += C:\opencv\build\include
 
-LIBS += C:\opencv-build\bin\libopencv_core320.dll
-LIBS += C:\opencv-build\bin\libopencv_highgui320.dll
-LIBS += C:\opencv-build\bin\libopencv_imgcodecs320.dll
-LIBS += C:\opencv-build\bin\libopencv_imgproc320.dll
-LIBS += C:\opencv-build\bin\libopencv_features2d320.dll
-LIBS += C:\opencv-build\bin\libopencv_calib3d320.dll
+LIBS += C:\OpenCV_Build_Cmake\bin\libopencv_core320.dll
+LIBS += C:\OpenCV_Build_Cmake\bin\libopencv_highgui320.dll
+LIBS += C:\OpenCV_Build_Cmake\bin\libopencv_imgcodecs320.dll
+LIBS += C:\OpenCV_Build_Cmake\bin\libopencv_imgproc320.dll
+LIBS += C:\OpenCV_Build_Cmake\bin\libopencv_videoio320.dll
+

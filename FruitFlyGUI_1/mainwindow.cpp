@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QDebug>
 
 #include "videodata.h"
 
@@ -10,6 +11,9 @@ VideoData FlyData;
 QString VideoFileName;
 QString OutputFileName;
 QString OutputFileParse;
+
+int theObject[2] = {0,0};
+cv::Rect objectBoundingRect = cv::Rect(0,0,0,0);
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -57,21 +61,20 @@ void MainWindow::on_pbExit_clicked()
 
 void MainWindow::on_pbStart_clicked()
 {
-    if(VideoFileName.isEmpty()){
-        QMessageBox::warning(this,"Error!!","Please Load A Video");
-        return;
-    }
-    else if(OutputFileName.isEmpty()){
-        QMessageBox::warning(this,"Error!!","Please Give A Name to the Output File");
-        return;
-    }
-    else if(OutputFileParse.isEmpty()){
-        QMessageBox::warning(this,"Error!!","Please Give A Name to the Output File");
-        return;
-    }
+//    if(VideoFileName.isEmpty()){
+//        QMessageBox::warning(this,"Error!!","Please Load A Video");
+//        return;
+//    }
+//    else if(OutputFileName.isEmpty()){
+//        QMessageBox::warning(this,"Error!!","Please Give A Name to the Output File");
+//        return;
+//    }
+//    else if(OutputFileParse.isEmpty()){
+//        QMessageBox::warning(this,"Error!!","Please Give A Name to the Output File");
+//        return;
+//    }
 
-
-
+VideoAnalyzer();
 }
 
 void MainWindow::FileNameParser(QString name){
@@ -108,7 +111,38 @@ std::string MainWindow::intToString(int number){
     ss<< number;
     return ss.str();
 }
-void MainWindow::searchForMovement(cv::Mat,cv::Mat){
+void MainWindow::searchForMovement(cv::Mat thresholdImage,cv::Mat &cameraFeed){
+    bool objectDetected = false;
+    cv::Mat temp;
+    thresholdImage.copyTo(temp);
+
+    std::vector<std::vector<cv::Point>>contours;
+    std::vector<cv::Vec4i> hierachy;
+
+    cv::findContours(temp,contours,cv::RETR_EXTERNAL,cv::CHAIN_APPROX_SIMPLE);
+    if(contours.size()>0)objectDetected=true;
+    else objectDetected=false;
+
+    if(objectDetected){
+       std::vector<std::vector<cv::Point>>largestContourVec;
+       largestContourVec.push_back(contours.at(contours.size()-1));
+       objectBoundingRect = cv::boundingRect(largestContourVec.at(0));
+       int xpos = objectBoundingRect.x + objectBoundingRect.width/2;
+       int ypos = objectBoundingRect.y + objectBoundingRect.height/2;
+       theObject[0]=xpos;
+       theObject[1]=ypos;
+    }
+    int x= theObject[0];
+    int y= theObject[1];
+    cv::circle(cameraFeed, cv::Point(x, y), 20, cv::Scalar(0, 255, 0), 2);
+    cv::line(cameraFeed, cv::Point(x, y), cv::Point(x, y - 25), cv::Scalar(0, 255, 0), 2);
+    cv::line(cameraFeed, cv::Point(x, y), cv::Point(x, y + 25), cv::Scalar(0, 255, 0), 2);
+    cv::line(cameraFeed, cv::Point(x, y), cv::Point(x - 25, y), cv::Scalar(0, 255, 0), 2);
+    cv::line(cameraFeed, cv::Point(x, y), cv::Point(x + 25, y), cv::Scalar(0, 255, 0), 2);
+    cv::Point(x, y);
+    FlyData.FrameDataStruct.X_Coord = x;
+    FlyData.FrameDataStruct.Y_Coord = y;
+    FlyData.FrameVector.push_back(FlyData.FrameDataStruct);
 
 }
 void MainWindow::ArenaSetup(int event, int x,int y,int flags,void* userData){
@@ -121,12 +155,12 @@ void MainWindow::ArenaSetup(int event, int x,int y,int flags,void* userData){
     }
     else if(size==3){
         FlyData.ArenaCalc();
-        //cv::circle((*(cv::Mat)userData),cv::Point(FlyData.x_center,FlyData.y_center),FlyData.ArenaRadius,cv::Scalar(0,255,0),3);
+       // cv::circle((*(cv::Mat)userData),cv::Point(FlyData.x_center,FlyData.y_center),FlyData.ArenaRadius,cv::Scalar(0,255,0),3);
         int rectP1x = FlyData.x_center - FlyData.ArenaRadius -5;
         int rectP1y = FlyData.y_center -FlyData.ArenaRadius -5;
         int rectP2x = FlyData.x_center + FlyData.ArenaRadius + 5;
         int rectP2y =FlyData.y_center + FlyData.ArenaRadius + 5;
-       // cv::rectangle((*(cv::Mat)userData),cv::Point(rectP1x,rectP1y),cv::Point(rectP2x,rectP2y),cv::Scalar(0,255,255),3);
+        //cv::rectangle((*(cv::Mat)userData),cv::Point(rectP1x,rectP1y),cv::Point(rectP2x,rectP2y),cv::Scalar(0,255,255),3);
     }
     cv::imshow("Areana",(*(cv::Mat*)userData));
 
@@ -138,8 +172,39 @@ void MainWindow::VideoAnalyzer(){
     cv::Mat differenceImage;
     cv::Mat thresholdImage;
 
-    //if(!cap.isOpened()){
-    //    QMessageBox::warning(this,"Error","Error Opening Video Stream on File");
-   // }
+    cv::VideoCapture cap (VideoFileName.toStdString());
+
+    if(!cap.isOpened()){
+        QMessageBox::warning(this,"Error","Error Opening Video Stream on File");
+        return;
+    }
+    cv::namedWindow("Frame");
+    cap>>frame1;
+    cap>>frame2;
+    int counter =1;
+    while(1){
+        qDebug()<<counter;
+        if(frame1.empty()||frame2.empty()) break;
+        cv::cvtColor(frame1,grayImage1,cv::COLOR_BGR2GRAY);
+        cv::cvtColor(frame2,grayImage2,cv::COLOR_BGR2GRAY);
+        cv::absdiff(grayImage1,grayImage2,differenceImage);
+        cv::threshold(differenceImage,thresholdImage,20,255,cv::THRESH_BINARY);
+        cv::blur(thresholdImage,thresholdImage,cv::Size(10,10));
+        cv::threshold(thresholdImage,thresholdImage,20,255,cv::THRESH_BINARY);
+        searchForMovement(thresholdImage,frame1);
+        cv::imshow("Frame",frame1);
+
+
+        cap.read(frame1);
+        counter=counter +1;
+        char c = (char)cv::waitKey(25);
+        if(c==27) break;
+        frame1.release();
+        frame2.release();
+        cap>>frame1;
+        cap>>frame2;
+    }
+    cap.release();
+    cv::destroyAllWindows();
 
 }
