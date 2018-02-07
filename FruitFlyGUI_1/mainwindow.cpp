@@ -90,7 +90,7 @@ void MainWindow::on_pbStart_clicked()
             OutputSaveLocation= OutputSaveLocation + OutputFileParse;
        }
        else OutputSaveLocation = OutputSaveLocation +'/' +OutputFileParse;
-
+       OutputFileName = ui->txtbxOutputFileName->text();
        VideoAnalyzer();
     }
 }
@@ -197,19 +197,10 @@ void MainWindow::VideoAnalyzer(){
         return;
     }
     cv::namedWindow("Frame");
-    cap>>frame1;
     cap>>frame2;
-    int counter = 0;
+    frame1 = frame2.clone();
+    int counter = 1;
     while(1){
-        qDebug()<<counter;
-        if(frame1.empty()||frame2.empty()) {
-
-            if(frame1.empty())   QMessageBox::information(this,"Frame 1","Frame 1 is empthy top of video tracking");
-            else{
-                QMessageBox::information(this,"Frame 2","Frame 2 is empthy top of video tracking");
-            }
-            break;
-        }
         cv::cvtColor(frame1,grayImage1,cv::COLOR_BGR2GRAY);
         cv::cvtColor(frame2,grayImage2,cv::COLOR_BGR2GRAY);
         cv::absdiff(grayImage1,grayImage2,differenceImage);
@@ -217,20 +208,13 @@ void MainWindow::VideoAnalyzer(){
         cv::blur(thresholdImage,thresholdImage,cv::Size(10,10));
         cv::threshold(thresholdImage,thresholdImage,20,255,cv::THRESH_BINARY);
         searchForMovement(thresholdImage,frame1);
-        FlyData.FrameVector[counter].FrameNumber = counter + 1;
         cv::imshow("Frame",frame1);
         cap.read(frame1);
-        counter=counter +1;
-        frame1.release();
-        cap>>frame1;
-        frame1=frame2.clone();
-        frame2.release();
+        counter++;
+        qDebug()<<"Frame Count: "<<counter;
+        frame1 =frame2.clone();
         cap>>frame2;
-        if(frame2.empty()){
-
-            QMessageBox::information(this,"Frame 2","Frame 2 is empthy end of video tracking");
-             break;
-        }
+        if(frame2.empty()) break;
         char c = (char)cv::waitKey(25);
         if(c==27) break;
     }
@@ -248,8 +232,9 @@ void MainWindow::VideoAnalyzer(){
         return;
 
     }
-    DebugMode();
-    return;
+    qDebug()<<"\n\n\n"<<counter;
+    //DebugMode();
+    //return;
     verifier = FlyData.WriteToFile(OutputSaveLocation.toStdString(),VideoFileName.toStdString());
     if(verifier == true){
         QMessageBox::information(this,"Finish","Video has Finish Processing");
@@ -258,7 +243,6 @@ void MainWindow::VideoAnalyzer(){
     else{
         QMessageBox::warning(this,"Error","Data File Was not created");
         return;
-
     }
 }
 void MainWindow::DebugMode(){
