@@ -3,6 +3,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <QDebug>
+#include <QPointer>
 
 #include "videodata.h"
 
@@ -12,6 +13,7 @@ QString VideoFileName;
 QString OutputFileName;
 QString OutputFileParse;
 QString OutputSaveLocation;
+bool Reset = false;
 
 
 
@@ -83,16 +85,32 @@ void MainWindow::on_pbStart_clicked()
     }
    else {
 
-
+       OutputFileName = ui->txtbxOutputFileName->text();
        OutputSaveLocation = QFileDialog::getExistingDirectory();
        qDebug()<<OutputSaveLocation;
        if(OutputSaveLocation.size() == 3){
-            OutputSaveLocation= OutputSaveLocation + OutputFileParse;
+            OutputSaveLocation= OutputSaveLocation + OutputFileName;
        }
-       else OutputSaveLocation = OutputSaveLocation +'/' +OutputFileParse;
-       OutputFileName = ui->txtbxOutputFileName->text();
-       VideoAnalyzer();
+       else OutputSaveLocation = OutputSaveLocation +'/' +OutputFileName;
+       ui->btnLoadVideo->setEnabled(false);
+       ui->pbClear->setEnabled(false);
+       ui->pbExit->setEnabled(false);
+       ui->pbStart->setEnabled(false);
+       Reset=VideoAnalyzer();
     }
+   if(Reset){
+       ui->btnLoadVideo->setEnabled(true);
+       ui->pbClear->setEnabled(true);
+       ui->pbExit->setEnabled(true);
+       ui->pbStart->setEnabled(true);
+       ui->txtbxOutputFileName->clear();
+       ui->txtbxVideoName->clear();
+       ui->ckboxOutputName->setChecked(false);
+       OutputFileName.clear();
+       OutputFileParse.clear();
+       VideoFileName.clear();
+       Reset = false;
+   }
 }
 
 void MainWindow::FileNameParser(QString name){
@@ -173,7 +191,7 @@ void MainWindow::ArenaSetup(int event, int x,int y,int flags,void* userData){
     }
     else if(size==3){
         FlyData.ArenaCalc();
-       // cv::circle((*(cv::Mat)userData),cv::Point(FlyData.x_center,FlyData.y_center),FlyData.ArenaRadius,cv::Scalar(0,255,0),3);
+        //cv::circle((*(cv::Mat)userData),cv::Point(FlyData.x_center,FlyData.y_center),FlyData.ArenaRadius,cv::Scalar(0,255,0),3);
         int rectP1x = FlyData.x_center - FlyData.ArenaRadius -5;
         int rectP1y = FlyData.y_center -FlyData.ArenaRadius -5;
         int rectP2x = FlyData.x_center + FlyData.ArenaRadius + 5;
@@ -183,7 +201,7 @@ void MainWindow::ArenaSetup(int event, int x,int y,int flags,void* userData){
     cv::imshow("Areana",(*(cv::Mat*)userData));
 
 }
-void MainWindow::VideoAnalyzer(){
+bool MainWindow::VideoAnalyzer(){
 
     cv::Mat frame1, frame2;
     cv::Mat grayImage1, grayImage2;
@@ -194,7 +212,7 @@ void MainWindow::VideoAnalyzer(){
 
     if(!cap.isOpened()){
         QMessageBox::warning(this,"Error","Error Opening Video Stream on File");
-        return;
+        return true;
     }
     cv::namedWindow("Frame");
     cap>>frame2;
@@ -215,7 +233,7 @@ void MainWindow::VideoAnalyzer(){
         frame1 =frame2.clone();
         cap>>frame2;
         if(frame2.empty()) break;
-        char c = (char)cv::waitKey(25);
+        char c = (char)cv::waitKey(10);
         if(c==27) break;
     }
     cap.release();
@@ -224,12 +242,12 @@ void MainWindow::VideoAnalyzer(){
     verifier = FlyData.DistanceCalc();
     if(verifier == false){
             QMessageBox::warning(this,"Error","Distance Calculation Were not Completed");
-            return;
+            return true;
     }
     verifier = FlyData.VelocityCalc();
     if(verifier == false){
         QMessageBox::warning(this,"Error","Velocity Calculation Were not Completed");
-        return;
+        return true;
 
     }
     qDebug()<<"\n\n\n"<<counter;
@@ -238,11 +256,12 @@ void MainWindow::VideoAnalyzer(){
     verifier = FlyData.WriteToFile(OutputSaveLocation.toStdString(),VideoFileName.toStdString());
     if(verifier == true){
         QMessageBox::information(this,"Finish","Video has Finish Processing");
-        return;
+        return true;
     }
     else{
         QMessageBox::warning(this,"Error","Data File Was not created");
-        return;
+
+        return true;
     }
 }
 void MainWindow::DebugMode(){

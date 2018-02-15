@@ -36,7 +36,7 @@ private slots:
     std::string intToString(int);
     void searchForMovement(cv::Mat,cv::Mat&);
     void ArenaSetup(int, int ,int ,int,void*);
-    void VideoAnalyzer();
+    bool VideoAnalyzer();
     void DebugMode();
 
 private:

@@ -220,7 +220,7 @@ bool VideoData::WriteToFile(std::string FileName, std::string VideoName){
             myFile << "Data by Minute" << "\n" << "\n";
             myFile << "Minutes,Distance [cm],Avg Velocity [cm/s],Time in Inner Arena [s],Active Time [s],InActive Time [s]" << "\n";
             for (int i = 0; i <= MinSize; i++) {
-                myFile << i + 1 << ",";
+                myFile << i << ",";
                 myFile << MinuteVector[i].Distance << ",";
                 myFile << MinuteVector[i].Velocity << ",";
                 myFile << MinuteVector[i].InnerTime << ",";
@@ -232,6 +232,7 @@ bool VideoData::WriteToFile(std::string FileName, std::string VideoName){
             myFile << "Data by the Frame" << "\n" << "\n";
             myFile << "Frame Number, X-Coordinate [pxl],Y-Coordinate [pxl],Distance [cm], Velocity [cm/s]\n";
             for (int i = 0; i <= FrameSize; i++) {
+                FrameVector[i].FrameNumber=i;
                 myFile << FrameVector[i].FrameNumber << ",";
                 myFile << FrameVector[i].X_Coord << ",";
                 myFile << FrameVector[i].Y_Coord << ",";
