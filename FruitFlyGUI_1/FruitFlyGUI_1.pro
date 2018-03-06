@@ -26,14 +26,19 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    videodata.cpp
+    videodata.cpp \
+    arenaselectionform.cpp \
+    myqlabel.cpp
 
 HEADERS += \
         mainwindow.h \
-    videodata.h
+    videodata.h \
+    arenaselectionform.h \
+    myqlabel.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    arenaselectionform.ui
 
 
 INCLUDEPATH += C:\opencv\build\include
